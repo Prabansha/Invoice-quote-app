@@ -21,6 +21,7 @@ const defaultBiz = {
   phone: "+94 77 123 4567",
   email: "hello@business.lk",
   website: "www.business.lk",
+  regNo: "",
   logo: null,
 };
 
@@ -284,7 +285,7 @@ export default function InvoiceApp() {
           --cream: #FAF6EC;
           --paper: #FFFFFF;
           --ink: #212A2E;
-          --slate: #6C7780;
+          --slate: #6E6E6E;
           --line: #E3DDCB;
           --danger: #B5432E;
         }
@@ -442,7 +443,7 @@ export default function InvoiceApp() {
         .meta-table td { padding: 2px 0; }
         .items-preview { width: 100%; border-collapse: collapse; margin: 26px 0; }
         .items-preview th { text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; padding: 8px 6px; color: var(--slate); }
-        .items-preview td { padding: 9px 6px; font-size: 13px; }
+        .items-preview td { padding: 9px 6px; font-size: 13px; vertical-align: middle; }
         .items-preview .num { text-align: right; }
         .totals-box { width: 260px; margin-left: auto; font-size: 13px; }
         .totals-box .line { display: flex; justify-content: space-between; padding: 5px 0; }
@@ -453,12 +454,23 @@ export default function InvoiceApp() {
         .foot-box p { font-size: 12px; line-height: 1.65; margin: 0; color: var(--ink); }
         .bank-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; border-bottom: 1px dotted var(--line); }
         .bank-row span:first-child { color: var(--slate); }
+        .notes-block { margin-top: 26px; font-size: 12px; color: var(--slate); border-top: 1px solid var(--line); padding-top: 14px; }
+        .sig-row { margin-top: 54px; display: flex; justify-content: space-between; align-items: flex-end; }
 
         @media print {
+          @page { size: A4; margin: 9mm; }
           .panel, .no-print { display: none !important; }
           .preview-wrap { padding: 0; display: block; }
           .shell { display: block; }
           .sheet { box-shadow: none; width: 100%; min-height: auto; }
+          .sheet-inner { padding: 18px 32px 24px; }
+          .doc-band { padding: 20px 32px !important; }
+          .items-preview { margin: 12px 0; }
+          .items-preview td, .items-preview th { padding: 6px; }
+          .foot-grid { margin-top: 10px; }
+          .notes-block { margin-top: 8px; padding-top: 6px; }
+          .sig-row { margin-top: 18px; }
+          .foot-grid, .totals-box, .sig-row, .items-preview { page-break-inside: avoid; }
         }
       `}</style>
 
@@ -541,6 +553,10 @@ export default function InvoiceApp() {
             <div className="field">
               <label>Website</label>
               <input value={biz.website} onChange={(e) => updateBiz({ website: e.target.value })} placeholder="www.yourbusiness.com" />
+            </div>
+            <div className="field">
+              <label>Business Reg. / VAT No. (optional)</label>
+              <input value={biz.regNo} onChange={(e) => updateBiz({ regNo: e.target.value })} placeholder="e.g. PV 12345 or VAT 123456789" />
             </div>
             <button className="btn" onClick={persistBiz}>Save profile for next time</button>
           </div>
@@ -724,7 +740,7 @@ function DocumentSheet(props) {
   if (template === "harbor") {
     return (
       <div className="sheet">
-        <div style={{ background: accentColor, color: textOnAccent, padding: "34px 50px" }}>
+        <div className="doc-band" style={{ background: accentColor, color: textOnAccent, padding: "34px 50px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
               {biz.logo && <img src={biz.logo} className="logo-area" alt="logo" />}
@@ -772,7 +788,7 @@ function DocumentSheet(props) {
   // brass — stays dark for contrast, but the accent bar and title pick up the logo color
   return (
     <div className="sheet">
-      <div style={{ background: "#1B1B1B", color: "white", padding: "40px 50px 26px" }}>
+      <div className="doc-band" style={{ background: "#1B1B1B", color: "white", padding: "40px 50px 26px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           {biz.logo ? <img src={biz.logo} className="logo-area" alt="logo" /> : <div className="doc-title" style={{ fontSize: 20 }}>{biz.name}</div>}
           <div style={{ textAlign: "right" }}>
@@ -798,6 +814,7 @@ function PreviewBody({ biz, date, dueDate, docType, client, items, currency, sub
         <div style={{ fontSize: 12.5, lineHeight: 1.6, color: "var(--slate)", maxWidth: 260 }}>
           {biz.address}<br />{biz.phone}<br />{biz.email}
           {biz.website ? <><br />{biz.website}</> : null}
+          {biz.regNo ? <><br />Reg No: {biz.regNo}</> : null}
         </div>
         <table className="meta-table" style={{ width: 220 }}>
           <tbody>
@@ -855,13 +872,18 @@ function PreviewBody({ biz, date, dueDate, docType, client, items, currency, sub
       </div>
 
       {notes && (
-        <div style={{ marginTop: 26, fontSize: 12, color: "var(--slate)", borderTop: "1px solid var(--line)", paddingTop: 14 }}>
+        <div className="notes-block">
           {notes}
         </div>
       )}
 
-      <div style={{ marginTop: 54, display: "flex", justifyContent: "flex-end" }}>
+      <div className="sig-row">
+        <div style={{ width: 180 }}>
+          <div style={{ borderTop: "1px solid var(--ink)", paddingTop: 6 }} />
+          <div style={{ fontSize: 11, color: "var(--slate)", letterSpacing: "0.04em" }}>Date</div>
+        </div>
         <div style={{ width: 220, textAlign: "center" }}>
+          <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 28 }}>For {biz.name}</div>
           <div style={{ borderTop: "1px solid var(--ink)", paddingTop: 6 }} />
           <div style={{ fontSize: 11, color: "var(--slate)", letterSpacing: "0.04em" }}>Authorized Signature</div>
         </div>
