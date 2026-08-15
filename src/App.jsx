@@ -26,7 +26,7 @@ const defaultBiz = {
 };
 
 const defaultBank = { bankName: "", accountName: "", accountNumber: "", branch: "" };
-const defaultTerms = "Payment due within 14 days of the invoice date. Prices are valid as quoted and subject to change thereafter. Goods/services once delivered are as per the agreed scope.";
+const defaultTerms = "Payment due within 14 days of the invoice date.\nPrices are valid as quoted and subject to change thereafter.\nGoods/services once delivered are as per the agreed scope.";
 
 function fmt(n, cur) {
   const v = isFinite(n) ? n : 0;
@@ -452,6 +452,8 @@ export default function InvoiceApp() {
         .foot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
         .foot-box h4 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--slate); margin: 0 0 8px; font-weight: 600; }
         .foot-box p { font-size: 12px; line-height: 1.65; margin: 0; color: var(--ink); }
+        .terms-list { margin: 0; padding-left: 15px; }
+        .terms-list li { font-size: 12px; line-height: 1.6; color: var(--ink); margin-bottom: 4px; }
         .bank-row { display: flex; justify-content: space-between; font-size: 12px; padding: 3px 0; border-bottom: 1px dotted var(--line); }
         .bank-row span:first-child { color: var(--slate); }
         .notes-block { margin-top: 26px; font-size: 12px; color: var(--slate); border-top: 1px solid var(--line); padding-top: 14px; }
@@ -683,7 +685,7 @@ export default function InvoiceApp() {
 
           <div className="section">
             <span className="section-label">Terms &amp; Conditions</span>
-            <textarea rows={4} value={terms} onChange={(e) => setTerms(e.target.value)} />
+            <textarea rows={4} value={terms} onChange={(e) => setTerms(e.target.value)} placeholder="One point per line" />
           </div>
 
           <div className="section">
@@ -808,6 +810,7 @@ function DocumentSheet(props) {
 
 function PreviewBody({ biz, date, dueDate, docType, client, items, currency, subtotal, discountPct, discountAmt, taxPct, taxAmt, total, notes, terms, bank, accent }) {
   const hasBank = bank.bankName || bank.accountName || bank.accountNumber || bank.branch;
+  const termsList = (terms || "").split("\n").map((t) => t.trim()).filter(Boolean);
   return (
     <>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
@@ -863,10 +866,12 @@ function PreviewBody({ biz, date, dueDate, docType, client, items, currency, sub
             {bank.branch && <div className="bank-row"><span>Branch</span><span>{bank.branch}</span></div>}
           </div>
         )}
-        {terms && (
+        {termsList.length > 0 && (
           <div className="foot-box">
             <h4>Terms &amp; Conditions</h4>
-            <p>{terms}</p>
+            <ul className="terms-list">
+              {termsList.map((t, i) => <li key={i}>{t}</li>)}
+            </ul>
           </div>
         )}
       </div>
